@@ -216,8 +216,8 @@ class Beam:
         return self._reaction_loads
 
     @property
-    def rotation_jumps(self):
-        """ Returns the rotation jumps in hinges multiplied by the elastic modulus and second moment in a dictionary."""
+    def rotation_jumps(self): #AANPASSEN
+        """ Returns the rotation jumps in rotation hinges in a dictionary."""
         return self._rotation_jumps
 
     @property
@@ -539,9 +539,9 @@ class Beam:
         =======
         Symbol
             If type = "rotation"
-                - The unknown rotation jump multiplied by the elastic modulus and second moment as a symbol.
+                - The unknown rotation jump as a symbol.
             If type = "sliding"
-                - The unknown deflection jump multiplied by the elastic modulus and second moment as a symbol.
+                - The unknown deflection jump as a symbol.
 
         Examples
         ========
@@ -570,7 +570,7 @@ class Beam:
         >>> b.reaction_loads
         {M_15: -75/2, R_0: 0, R_10: 40, R_15: -5}
         >>> b.rotation_jumps
-        {EI_P_12: -1875/16, EI_P_5: 9625/24}
+        {P_12: -1875/16, P_5: 9625/24}
         >>> b.rotation_jumps[p12]
         -1875/16
         >>> b.bending_moment()
@@ -586,8 +586,6 @@ class Beam:
             raise ValueError('Cannot place hinge at the beginning of the beam.')
         if loc == self.length:
             raise ValueError('Cannot place hinge at the end of the beam.')
-        if any(loc == arg[1] and arg[2] == -2 for arg in self._applied_loads):
-            raise ValueError('Cannot place hinge at the location of a moment load.')
         if type == "rotation" and any(loc == support[0] and support[1] == 'fixed' for support in self._applied_supports):
             raise ValueError('Cannot place rotation hinge at the location of a fixed support. Change fixed support to pin.')
         # toevoegen over sliding hinge op een support
@@ -667,9 +665,6 @@ class Beam:
         value = sympify(value)
         start = sympify(start)
         order = sympify(order)
-
-        if order == -2 and start in self._applied_hinges:
-            raise ValueError('Cannot place a moment load directly on a hinge.')
 
         self._applied_loads.append((value, start, order, end))
         self._load += value*SingularityFunction(x, start, order)
